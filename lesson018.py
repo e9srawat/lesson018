@@ -1,3 +1,8 @@
+"""lessson 018"""
+import csv
+from itertools import zip_longest
+
+
 def formatter(interest):
     """formats the numbers and adds commas and rounds to 2 decimal places"""
     reslst = [
@@ -27,14 +32,12 @@ def compound_interest(principal, term, rate):
     # A = P * (1 + r/1)^(1t)
     interest = principal * (1 + rate) ** (term)
     return formatter(interest)
-result = compound_interest(123456, 23, 0.08)
-# print(formatter(35034.666666))
 
 
 def compound_interest_with_payments(principal, payment, term, rate, end_of_period=True):
     """returns the total value of the principal"""
     amount = principal
-    for i in range(term):
+    for _ in range(term):
         if end_of_period:
             amount = (amount + payment) * (1 + rate)
         else:
@@ -52,32 +55,72 @@ def savings_calculator(present_value, future_value, term, rate, end_of_period=Tr
 
 
 def files_innerjoin(filename1, filename2, **kwargs):
-    """performs inner join on two csv files"""
-    with open(filename1, "r") as file1:
-        header1 = file1.readline().strip().split(",")
-        data1 = [line.strip().split(",") for line in file1]
+    """inner joins two files"""
+    with open(filename1, "r", encoding="utf-8") as file1:
+        data1 = [i[0].split(",") for i in list(csv.reader(file1, delimiter=" "))]
 
-    with open(filename2, "r") as file2:
-        header2 = file2.readline().strip().split(",")
-        data2 = [line.strip().split(",") for line in file2]
+    with open(filename2, "r", encoding="utf-8") as file2:
+        data2 = [i[0].split(",") for i in list(csv.reader(file2, delimiter=" "))]
 
-    index1 = [header1.index(*i) for i in kwargs.values()]
-    index2 = [header2.index(*i) for i in kwargs.values()]
+    index1 = [data1[0].index(*i) for i in kwargs.values()]
+    index2 = [data2[0].index(*i) for i in kwargs.values()]
 
-    result = [i + j for i in data1 for j in data2 if i[index1[0]] == j[index2[0]]]
+    lst = []
+    for i, j in zip(data1, data2):
+        flag = [i[k] == j[l] for k, l in zip(index1, index2)]
+        if all(flag):
+            lst.append(i + j)
 
-    with open("results.csv", "w") as result_file:
-        result_file.write(",".join(header1 + header2) + "\n")
-        for row in result:
+    with open("results.csv", "w", encoding="utf-8") as result_file:
+        for row in lst:
             result_file.write(",".join(row) + "\n")
 
 
 def files_leftouterjoin(filename1, filename2, **kwargs):
-    ...
+    """left joins two files"""
+    with open(filename1, "r", encoding="utf-8") as file1:
+        data1 = [i[0].split(",") for i in list(csv.reader(file1, delimiter=" "))]
+
+    with open(filename2, "r", encoding="utf-8") as file2:
+        data2 = [i[0].split(",") for i in list(csv.reader(file2, delimiter=" "))]
+
+    index1 = [data1[0].index(*i) for i in kwargs.values()]
+    index2 = [data2[0].index(*i) for i in kwargs.values()]
+
+    lst = []
+    for i, j in zip(data1, data2):
+        for k, l in zip(index1, index2):
+            if not i or not j or i[k] != j[l]:
+                lst.append(i + ["NaN" for i in range(len(data2[0]))])
+            else:
+                lst.append(i + j)
+
+    with open("results.csv", "w", encoding="utf-8") as result_file:
+        for i in lst:
+            result_file.write(",".join(i) + "\n")
 
 
 def files_rightouterjoin(filename1, filename2, **kwargs):
-    ...
+    """right joins two files"""
+    with open(filename1, "r", encoding="utf-8") as file1:
+        data1 = [i[0].split(",") for i in list(csv.reader(file1, delimiter=" "))]
+
+    with open(filename2, "r", encoding="utf-8") as file2:
+        data2 = [i[0].split(",") for i in list(csv.reader(file2, delimiter=" "))]
+
+    index1 = [data1[0].index(*i) for i in kwargs.values()]
+    index2 = [data2[0].index(*i) for i in kwargs.values()]
+
+    lst = []
+    for i, j in zip_longest(data1, data2):
+        for k, l in zip(index1, index2):
+            if not i or not j or i[k] != j[l]:
+                lst.append(j + ["NaN" for i in range(len(data1[0]))])
+            else:
+                lst.append(j + i)
+    with open("results.csv", "w", encoding="utf-8") as result_file:
+        for i in lst:
+            result_file.write(",".join(i) + "\n")
 
 
 def list_to_dict(data: list):
@@ -99,7 +142,25 @@ def dict_to_list(data: dict):
     return lst
 
 
-#files_innerjoin("file1.csv", "file2.csv", key=["employee_id"])
+def split_file(filename, split_cols: list):
+    """splits a file into multiple files according to the columns"""
+    with open(filename, "r", encoding="utf-8") as file1:
+        reader1 = csv.reader(file1, delimiter=" ", quotechar="|")
+        tmp = list(reader1)
+        data = [i[0].split(",") for i in tmp]
+        header = [data[0]]
 
-# print(savings_calculator(0, 1e8, 35, 0.10))
-# print(dict_to_list({"name": ["a", "b"], "age": [21,43]}))
+    indices = [data[0].index(i) for i in split_cols]
+    dicn = {}
+    for i in data[1:]:
+        key = tuple(i[col] for col in indices)
+        if key not in dicn:
+            dicn[key] = []
+        dicn[key].append(i)
+
+    for i,j in dicn.items():
+        ofname = "_".join(i) + ".csv"
+        with open(ofname, "w", newline="", encoding="utf-8") as output:
+            writer = csv.writer(output)
+            writer.writerows(header)
+            writer.writerows(j)

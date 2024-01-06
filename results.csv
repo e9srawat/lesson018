@@ -1,4 +1,7 @@
-employee_id,name,department,salary,employee_id,age,city
-1,John,HR,50000,1,30,New York
-2,Jane,IT,60000,2,28,San Francisco
-3,Bob,Finance,55000,3,35,Chicago
+employee_id,age,city,employee_id,name,department,salary
+1,30,New_York,1,John,HR,50000
+2,28,San_Francisco,2,Jane,IT,60000
+3,35,Chicago,3,Bob,Finance,55000
+4,40,Los_Angeles,4,Janice,Janitor,1000
+9,104,Narnia,NaN,NaN,NaN,NaN
+10,900000,Cybertron,NaN,NaN,NaN,NaN

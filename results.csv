@@ -1,0 +1,4 @@
+employee_id,name,department,salary,employee_id,age,city
+1,John,HR,50000,1,30,New York
+2,Jane,IT,60000,2,28,San Francisco
+3,Bob,Finance,55000,3,35,Chicago
